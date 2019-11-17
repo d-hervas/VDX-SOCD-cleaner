@@ -1,0 +1,66 @@
+diff --git a/src/Main.cpp b/src/Main.cpp
+index 1c986c2..a1d7cf2 100644
+--- a/src/Main.cpp
++++ b/src/Main.cpp
+@@ -1,7 +1,7 @@
+ /*
+ MIT License
+ 
+-Copyright (c) 2017 Benjamin "Nefarius" Höglinger
++Copyright (c) 2017 Benjamin "Nefarius" Hï¿½glinger
+ 
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+@@ -49,7 +49,6 @@ SOFTWARE.
+ #include <iosfwd>
+ #include <sstream>
+ 
+-
+ typedef struct
+ {
+     unsigned long eventCount;
+@@ -159,6 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
+     XINPUT_STATE state;
+     XINPUT_GAMEPAD_SECRET secret;
+ 
++
+     sf::Vector2i grabbedOffset;
+     auto grabbedWindow = false;
+     auto isOpen = true;
+@@ -202,7 +202,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
+         // Create main window
+         ImGui::SetNextWindowSize(ImVec2(550, 140));
+         ImGui::SetNextWindowPosCenter();
+-        ImGui::Begin("XInput to ViGEm sample application", &isOpen,
++        ImGui::Begin("XInput SOCD Cleaner", &isOpen,
+             ImVec2(550, 140), 1.0f,
+             ImGuiWindowFlags_NoResize
+             | ImGuiWindowFlags_NoCollapse
+@@ -308,6 +308,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
+                     state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
+                 }
+ 
++				//SOCD CLEANING
++				boolean left_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
++				boolean right_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0;
++				boolean up_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0;
++				boolean down_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0;
++				if (left_pressed && right_pressed) {
++					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_LEFT;
++					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_RIGHT;
++				};
++				if (up_pressed && down_pressed) {
++					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_DOWN;
++				};
++
+                 switch (targets[i].targetType)
+                 {
+                 case X360:
+@@ -315,7 +328,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
+                     // The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
+                     // so we can simply take it "as-is" and cast it.
+                     vigem_target_x360_update(client, targets[i].target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
+-
+                     break;
+                 case DS4:
+                 {
