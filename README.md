@@ -1,3 +1,8 @@
+# W A R N I N G
+- The latest version includes custom bindings for my hitbox - it won't work if you're trying to clean a normal XInput device (I mean, it will work, but your controls will be all messed up). *DELETE THE PARAGRAPH UNDER "CUSTOM HITBOX FUCKERY" IF YOU WANT THIS TO WORK FOR YOU*. Open an issue if you have any problems.
+
+- VDX works in a different way now (the mappings are done in the header file). I've only re-mapped it for *PS4 EMULATION*. *CHOOSE DUALSHOCK 4 CONTROLLER, ELSE IT WON'T WORK*.
+
 # VDX-SOCD-cleaner
 Git patch for [Nefarius's VDX](https://github.com/ViGEm/VDX) that cleans Simultaneous Opposite Cardinal Directions, hitbox-style.
 

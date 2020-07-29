@@ -1,66 +1,167 @@
-diff --git a/src/Main.cpp b/src/Main.cpp
-index 1c986c2..a1d7cf2 100644
---- a/src/Main.cpp
-+++ b/src/Main.cpp
-@@ -1,7 +1,7 @@
- /*
- MIT License
- 
--Copyright (c) 2017 Benjamin "Nefarius" Höglinger
-+Copyright (c) 2017 Benjamin "Nefarius" Hï¿½glinger
- 
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
-@@ -49,7 +49,6 @@ SOFTWARE.
- #include <iosfwd>
- #include <sstream>
- 
--
- typedef struct
+From 06b604b5b85ad594258c121ef9c8a6331d407514 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Daniel=20Herv=C3=A1s?= <dhervas@outlook.es>
+Date: Sat, 18 Jul 2020 00:16:04 +0200
+Subject: [PATCH 1/3] include SOCD cleaning
+
+---
+ .gitmodules       |  3 +++
+ ports/vigemclient |  1 +
+ src/VDX.h         | 28 ++++++++++++++++++++++++----
+ 3 files changed, 28 insertions(+), 4 deletions(-)
+ create mode 100644 .gitmodules
+ create mode 160000 ports/vigemclient
+
+diff --git a/.gitmodules b/.gitmodules
+new file mode 100644
+index 0000000..9779d96
+--- /dev/null
++++ b/.gitmodules
+@@ -0,0 +1,3 @@
++[submodule "ports/vigemclient"]
++	path = ports/vigemclient
++	url = https://github.com/ViGEm/ViGEmClient.vcpkg.git
+diff --git a/ports/vigemclient b/ports/vigemclient
+new file mode 160000
+index 0000000..bfd30f4
+--- /dev/null
++++ b/ports/vigemclient
+@@ -0,0 +1 @@
++Subproject commit bfd30f4cca8d9d13a0c4062e0fc3abda03192150
+diff --git a/src/VDX.h b/src/VDX.h
+index 8da5616..99aef16 100644
+--- a/src/VDX.h
++++ b/src/VDX.h
+@@ -159,6 +159,17 @@ VOID FORCEINLINE XUSB_TO_DS4_REPORT(
+ 	_Out_ PDS4_REPORT Output
+ )
  {
-     unsigned long eventCount;
-@@ -159,6 +158,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
-     XINPUT_STATE state;
-     XINPUT_GAMEPAD_SECRET secret;
- 
++	// CUSTOM HITBOX FUCKERY
++	if (Input->wButtons & XUSB_GAMEPAD_LEFT_THUMB) {
++		if (!Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) Input->wButtons &= ~XUSB_GAMEPAD_LEFT_THUMB; 
++		Input->wButtons |= XUSB_GAMEPAD_DPAD_LEFT;
++	}
++	if (Input->wButtons & XUSB_GAMEPAD_RIGHT_THUMB) {
++		if (!Input->wButtons & XUSB_GAMEPAD_DPAD_UP) Input->wButtons &= ~XUSB_GAMEPAD_RIGHT_THUMB; 
++		Input->wButtons |= XUSB_GAMEPAD_DPAD_UP;
++	}
++	// END
 +
-     sf::Vector2i grabbedOffset;
-     auto grabbedWindow = false;
-     auto isOpen = true;
-@@ -202,7 +202,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
-         // Create main window
-         ImGui::SetNextWindowSize(ImVec2(550, 140));
-         ImGui::SetNextWindowPosCenter();
--        ImGui::Begin("XInput to ViGEm sample application", &isOpen,
-+        ImGui::Begin("XInput SOCD Cleaner", &isOpen,
-             ImVec2(550, 140), 1.0f,
-             ImGuiWindowFlags_NoResize
-             | ImGuiWindowFlags_NoCollapse
-@@ -308,6 +308,19 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
-                     state.Gamepad.wButtons |= XUSB_GAMEPAD_GUIDE;
-                 }
+ 	if (Input->wButtons & XUSB_GAMEPAD_BACK) Output->bSpecial |= DS4_SPECIAL_BUTTON_TOUCHPAD;
+ 	if (Input->wButtons & XUSB_GAMEPAD_START) Output->wButtons |= DS4_BUTTON_OPTIONS;
+ 	if (Input->wButtons & XUSB_GAMEPAD_LEFT_THUMB) Output->wButtons |= DS4_BUTTON_THUMB_LEFT;
+@@ -177,10 +188,19 @@ VOID FORCEINLINE XUSB_TO_DS4_REPORT(
+ 	if (Input->bLeftTrigger > 0)Output->wButtons |= DS4_BUTTON_TRIGGER_LEFT;
+ 	if (Input->bRightTrigger > 0)Output->wButtons |= DS4_BUTTON_TRIGGER_RIGHT;
  
-+				//SOCD CLEANING
-+				boolean left_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
-+				boolean right_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0;
-+				boolean up_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0;
-+				boolean down_pressed = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0;
-+				if (left_pressed && right_pressed) {
-+					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_LEFT;
-+					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_RIGHT;
-+				};
-+				if (up_pressed && down_pressed) {
-+					state.Gamepad.wButtons &= ~XINPUT_GAMEPAD_DPAD_DOWN;
-+				};
+-	if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTH);
+-	if (Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_EAST);
+-	if (Input->wButtons & XUSB_GAMEPAD_DPAD_DOWN) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_SOUTH);
+-	if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_WEST);
++	// U/D SOCD CLEANING
++	if (!(Input->wButtons & XUSB_GAMEPAD_DPAD_UP && Input->wButtons & XUSB_GAMEPAD_DPAD_DOWN)) {
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTH);
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_DOWN) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_SOUTH);
++	} else {
++		DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTH);
++	}
 +
-                 switch (targets[i].targetType)
-                 {
-                 case X360:
-@@ -315,7 +328,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine,
-                     // The XINPUT_GAMEPAD structure is identical to the XUSB_REPORT structure
-                     // so we can simply take it "as-is" and cast it.
-                     vigem_target_x360_update(client, targets[i].target, *reinterpret_cast<XUSB_REPORT*>(&state.Gamepad));
--
-                     break;
-                 case DS4:
-                 {
++	// L/R SOCD CLEANING
++	if (!(Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT && Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT)) {
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_EAST);
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_WEST);
++	}
+ 
+ 	if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP
+ 		&& Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTHEAST);
+-- 
+2.23.0.windows.1
+
+
+From 34dd6ac8009edd97a8824b60dc50c063dbcc640d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Daniel=20Herv=C3=A1s?= <dhervas@outlook.es>
+Date: Sat, 18 Jul 2020 00:50:00 +0200
+Subject: [PATCH 2/3] unfuck hitbox fuckery
+
+---
+ src/VDX.h | 24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/src/VDX.h b/src/VDX.h
+index 99aef16..0b71617 100644
+--- a/src/VDX.h
++++ b/src/VDX.h
+@@ -160,13 +160,25 @@ VOID FORCEINLINE XUSB_TO_DS4_REPORT(
+ )
+ {
+ 	// CUSTOM HITBOX FUCKERY
+-	if (Input->wButtons & XUSB_GAMEPAD_LEFT_THUMB) {
+-		if (!Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) Input->wButtons &= ~XUSB_GAMEPAD_LEFT_THUMB; 
+-		Input->wButtons |= XUSB_GAMEPAD_DPAD_LEFT;
++	if (!(Input->wButtons & XUSB_GAMEPAD_LEFT_THUMB) != !(Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT)) {
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) {
++			Input->wButtons |= XUSB_GAMEPAD_LEFT_THUMB;
++			Input->wButtons &= ~XUSB_GAMEPAD_DPAD_LEFT;
++		}
++		else {
++			Input->wButtons &= ~XUSB_GAMEPAD_LEFT_THUMB; 
++			Input->wButtons |= XUSB_GAMEPAD_DPAD_LEFT;
++		}
+ 	}
+-	if (Input->wButtons & XUSB_GAMEPAD_RIGHT_THUMB) {
+-		if (!Input->wButtons & XUSB_GAMEPAD_DPAD_UP) Input->wButtons &= ~XUSB_GAMEPAD_RIGHT_THUMB; 
+-		Input->wButtons |= XUSB_GAMEPAD_DPAD_UP;
++
++	if (!(Input->wButtons & XUSB_GAMEPAD_RIGHT_THUMB) != !(Input->wButtons & XUSB_GAMEPAD_DPAD_UP)) {
++		if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP) {
++			Input->wButtons |= XUSB_GAMEPAD_RIGHT_THUMB;
++			Input->wButtons &= ~XUSB_GAMEPAD_DPAD_UP; 
++		} else {
++			Input->wButtons &= ~XUSB_GAMEPAD_RIGHT_THUMB; 
++			Input->wButtons |= XUSB_GAMEPAD_DPAD_UP;
++		}
+ 	}
+ 	// END
+ 
+-- 
+2.23.0.windows.1
+
+
+From 6360d19c07cb37ef2918abe34eac70cc6e40aa87 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Daniel=20Herv=C3=A1s?= <dhervas@outlook.es>
+Date: Wed, 29 Jul 2020 21:20:50 +0200
+Subject: [PATCH 3/3] update VDX
+
+---
+ src/VDX.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/VDX.h b/src/VDX.h
+index 0b71617..b9da7f5 100644
+--- a/src/VDX.h
++++ b/src/VDX.h
+@@ -214,6 +214,11 @@ VOID FORCEINLINE XUSB_TO_DS4_REPORT(
+ 		if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_WEST);
+ 	}
+ 
++	if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT && Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT && Input->wButtons & XUSB_GAMEPAD_DPAD_UP) {
++		DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NONE);
++		DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTH);
++	}
++
+ 	if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP
+ 		&& Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTHEAST);
+ 	if (Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT
+@@ -223,6 +228,10 @@ VOID FORCEINLINE XUSB_TO_DS4_REPORT(
+ 	if (Input->wButtons & XUSB_GAMEPAD_DPAD_LEFT
+ 		&& Input->wButtons & XUSB_GAMEPAD_DPAD_UP) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTHWEST);
+ 
++	if (Input->wButtons & XUSB_GAMEPAD_DPAD_UP
++		&& Input->wButtons & XUSB_GAMEPAD_DPAD_RIGHT) DS4_SET_DPAD(Output, DS4_BUTTON_DPAD_NORTHEAST);
++
++
+ 	Output->bThumbLX = ((Input->sThumbLX + ((USHRT_MAX / 2) + 1)) / 257);
+ 	Output->bThumbLY = (-(Input->sThumbLY + ((USHRT_MAX / 2) - 1)) / 257);
+ 	Output->bThumbLY = (Output->bThumbLY == 0) ? 0xFF : Output->bThumbLY;
+-- 
+2.23.0.windows.1
+
